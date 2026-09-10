@@ -4,7 +4,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 
-/** Built-in provider backed by the Madoku rarity implementation. */
+/** Built-in provider for Core's generic rarity subsystem. */
 public final class MadokuRarityProvider implements RarityProvider {
 	private static RarityTierAPIManager.Tier toInternal(RarityAPIManager.Tier tier) {
 		return tier == null ? null : RarityTierAPIManager.Tier.valueOf(tier.name());

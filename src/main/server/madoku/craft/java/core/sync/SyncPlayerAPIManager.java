@@ -1,6 +1,7 @@
 package madoku.craft.java.core.sync;
 
-import madoku.craft.java.core.scheduler.SchedulerAPIManager;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import madoku.craft.java.core.runtime.AdaptiveIntervalAPIManager;
 import madoku.craft.java.core.time.TimeAPIManager;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
@@ -23,7 +24,7 @@ public final class SyncPlayerAPIManager {
 
 	public static void reset() {
 		nextDirtyFlushTick = Long.MIN_VALUE;
-		SchedulerAPIManager.clearAdaptiveDelayState(ADAPTIVE_OWNER_ID);
+		AdaptiveIntervalAPIManager.clearSystem(ADAPTIVE_OWNER_ID);
 	}
 
 	public static void onServerStarted(MinecraftServer server) {
@@ -44,9 +45,9 @@ public final class SyncPlayerAPIManager {
 			return false;
 		}
 
-		long interval = SchedulerAPIManager.resolveAdaptiveDelayTicks(
-			server,
+		long interval = AdaptiveIntervalAPIManager.resolve(
 			ADAPTIVE_OWNER_ID,
+			server,
 			MIN_DIRTY_FLUSH_INTERVAL_TICKS,
 			MAX_DIRTY_FLUSH_INTERVAL_TICKS
 		);
@@ -55,13 +56,16 @@ public final class SyncPlayerAPIManager {
 	}
 
 	public static boolean canSend(ServerPlayer player, CustomPacketPayload payload) {
-		return SyncGlobalManager.canSend(player, payload);
+		return player != null
+			&& payload != null
+			&& ServerPlayNetworking.canSend(player, payload.type());
 	}
 
 	public static boolean send(ServerPlayer player, CustomPacketPayload payload) {
-		return SyncGlobalManager.send(player, payload);
+		if (!canSend(player, payload)) return false;
+		ServerPlayNetworking.send(player, payload);
+		return true;
 	}
 
 
 }
-

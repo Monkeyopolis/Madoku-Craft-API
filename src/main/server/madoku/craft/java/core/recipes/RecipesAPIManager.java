@@ -109,7 +109,9 @@ public final class RecipesAPIManager {
 		}
 
 		boolean rarityWillBeApplied = RarityAPIManager.isEnabled()
+			&& RecipesItemAPIManager.isRarityCategoryItem(stack)
 			&& RarityAPIManager.detectAppliedRarity(stack) == null;
+		RecipesItemAPIManager.applyConfiguredItemLevel(stack, 1, !rarityWillBeApplied);
 		if (!rarityWillBeApplied) {
 			return List.of();
 		}
@@ -149,11 +151,13 @@ public final class RecipesAPIManager {
 	public static ItemStack createSmithingUpgradeResult(ItemStack baseStack, ItemStack vanillaResult) {
 		if (baseStack == null || baseStack.isEmpty()
 			|| vanillaResult == null || vanillaResult.isEmpty()
-			|| vanillaResult == null || vanillaResult.isEmpty()) {
+			|| !RecipesItemAPIManager.isRarityCategoryItem(baseStack)
+			|| !RecipesItemAPIManager.isRarityCategoryItem(vanillaResult)) {
 			return vanillaResult;
 		}
 
 		ItemStack rebuiltResult = vanillaResult.copy();
+		RecipesItemAPIManager.applyConfiguredItemLevel(rebuiltResult, 1);
 		if (!isInitialized() || !loadSystemEnabled()) {
 			return rebuiltResult;
 		}

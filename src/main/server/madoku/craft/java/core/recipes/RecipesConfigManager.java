@@ -3,7 +3,6 @@ package madoku.craft.java.core.recipes;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import madoku.craft.java.core.MadokuCoreManager;
 import madoku.craft.java.core.json.JSONFormatAPIManager;
 import madoku.craft.java.core.json.JSONAPIManager;
 
@@ -79,7 +78,7 @@ public final class RecipesConfigManager {
 
 	public static java.nio.file.Path getRootDirectory() {
 		return JSONAPIManager.getOrCreateGlobalSystemDirectory(
-			MadokuCoreManager.CORE_FOLDER_NAME + "/" + ROOT_FOLDER_NAME
+			"madoku-craft-core/" + ROOT_FOLDER_NAME
 		);
 	}
 
@@ -175,6 +174,5 @@ public final class RecipesConfigManager {
 		return categories.build();
 	}
 }
-
 
 

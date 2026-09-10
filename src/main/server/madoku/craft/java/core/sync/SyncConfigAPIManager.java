@@ -20,7 +20,9 @@ import java.util.function.Supplier;
  */
 public final class SyncConfigAPIManager {
 	private static final Logger LOGGER = LoggerFactory.getLogger(SyncConfigAPIManager.class);
+	private static final SyncConfigTransport UNAVAILABLE_TRANSPORT = (player, configId, snapshot) -> false;
 	private static final Map<String, ConfigSync> CONFIGS = new LinkedHashMap<>();
+	private static volatile SyncConfigTransport transport = UNAVAILABLE_TRANSPORT;
 	private static boolean initialized;
 
 	private SyncConfigAPIManager() {
@@ -34,6 +36,16 @@ public final class SyncConfigAPIManager {
 
 		initialized = true;
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> syncPlayer(handler.player));
+	}
+
+	/** Connects Core configuration synchronization to the active packet transport. */
+	public static void registerTransport(SyncConfigTransport candidate) {
+		transport = Objects.requireNonNull(candidate, "candidate");
+	}
+
+	/** Removes the active transport while retaining registered configuration definitions. */
+	public static void resetTransport() {
+		transport = UNAVAILABLE_TRANSPORT;
 	}
 
 	/**
@@ -76,7 +88,7 @@ public final class SyncConfigAPIManager {
 				}
 
 				try {
-					if (SyncPlayerAPIManager.send(player, new SyncPayloadAPIManager(entry.getKey(), snapshot))) {
+					if (transport.send(player, entry.getKey(), snapshot)) {
 						sent++;
 					}
 				} catch (RuntimeException exception) {
@@ -135,4 +147,3 @@ public final class SyncConfigAPIManager {
 	) {
 	}
 }
-

@@ -1,6 +1,5 @@
 package madoku.craft.mixin.core;
 
-import madoku.craft.java.MadokuCraftCore;
 import madoku.craft.java.core.enchant.EnchantConfigAPIManager;
 import madoku.craft.java.core.enchant.EnchantTableAPIManager;
 import madoku.craft.mixin.inventory.AbstractContainerScreenAccessor;
@@ -20,8 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(EnchantmentScreen.class)
 public abstract class EnchantmentScreenMixin {
-	private static final Identifier MADOKU_BOOK_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/book-slot.png");
-	private static final Identifier MADOKU_BOTTLE_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/bottle-slot.png");
+	private static final Identifier MADOKU_BOOK_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/book-slot.png");
+	private static final Identifier MADOKU_BOTTLE_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/bottle-slot.png");
 	@Unique private int madokuCraft$slotIconTick;
 
 	@Inject(method = "containerTick()V", at = @At("TAIL"))
@@ -79,4 +78,3 @@ public abstract class EnchantmentScreenMixin {
 		);
 	}
 }
-

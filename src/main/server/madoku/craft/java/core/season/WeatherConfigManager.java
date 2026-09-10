@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import madoku.craft.java.core.MadokuCoreManager;
 import madoku.craft.java.core.json.JSONFormatAPIManager;
 import madoku.craft.java.core.json.JSONAPIManager;
 
@@ -18,7 +17,7 @@ import java.util.List;
 
 /** Configuration for the global Madoku seasonal weather cycle. */
 public final class WeatherConfigManager {
-	public static final String CONFIG_FOLDER_NAME = MadokuCoreManager.CORE_FOLDER_NAME + "/madoku-season";
+	public static final String CONFIG_FOLDER_NAME = "madoku-craft-core/madoku-season";
 	public static final String CONFIG_FILE_NAME = "weather";
 	public static final String FIELD_ENABLED = "enabled";
 	public static final String FIELD_WEATHER = "weather";
@@ -179,5 +178,4 @@ public final class WeatherConfigManager {
 		}
 	}
 }
-
 

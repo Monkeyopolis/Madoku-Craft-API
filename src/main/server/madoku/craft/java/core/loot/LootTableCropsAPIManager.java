@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -56,8 +57,15 @@ public final class LootTableCropsAPIManager {
 		if (lootContext == null) {
 			return null;
 		}
+		// Farming owns crop harvesting while enabled, including its tracked crop
+		// state and fertilized-yield adjustments. The loot API still handles the
+		// vanilla crop tables when Farming is disabled.
+		if (LootFeatureAPIManager.isFarmingEnabled()) {
+			return null;
+		}
 		ServerLevel level = lootContext.getLevel();
-		if (ChunkDataAPIManager.isPlayerPlacedBlock(level, resolveBlockPos(lootContext))) {
+		if (LootFeatureAPIManager.isActiveDropPlayerPlacedBlock()
+			|| ChunkDataAPIManager.isPlayerPlacedBlock(level, resolveBlockPos(lootContext))) {
 			return null;
 		}
 		reloadIfNeeded(level == null ? null : level.getServer());
@@ -73,11 +81,15 @@ public final class LootTableCropsAPIManager {
 			return null;
 		}
 		RandomSource random = lootContext.getRandom();
+		ServerPlayer player = LootFeatureAPIManager.resolveLootPlayer(lootContext);
+		if (player == null) {
+			player = LootFeatureAPIManager.resolveActiveDropPlayer();
+		}
 		return LootTableAPIManager.rollSharedTable(
 			table,
 			random == null ? RandomSource.create() : random,
-			null,
-			false
+			player,
+			true
 		);
 	}
 
@@ -88,13 +100,14 @@ public final class LootTableCropsAPIManager {
 			return List.of();
 		}
 		LootTableAPIManager.SharedLootTable table = tablesById.get(resolveTableId(tableId));
+		ServerPlayer player = LootFeatureAPIManager.resolveActiveDropPlayer();
 		return table == null
 			? List.of()
 			: LootTableAPIManager.rollSharedTable(
 				table,
 				random == null ? RandomSource.create() : random,
-				null,
-				false
+				player,
+				true
 			);
 	}
 

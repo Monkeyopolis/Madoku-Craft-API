@@ -34,15 +34,9 @@ public final class LootTableConfigManager {
 	}
 
 	public static void initialize() {
-		EntitiesConfigManager.initialize();
-		StructuresConfigManager.initialize();
-		EquipmentsConfigAPIManager.initialize();
 	}
 
 	public static void reset() {
-		EntitiesConfigManager.reset();
-		StructuresConfigManager.reset();
-		EquipmentsConfigAPIManager.reset();
 	}
 
 	public static JsonObject buildSettingsDefaults() {
@@ -81,5 +75,4 @@ public final class LootTableConfigManager {
 		return collapsed.isBlank() ? fallback : collapsed;
 	}
 }
-
 

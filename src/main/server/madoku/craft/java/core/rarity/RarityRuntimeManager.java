@@ -1,5 +1,7 @@
 package madoku.craft.java.core.rarity;
 
+import madoku.craft.java.core.loot.LootFeatureAPIManager;
+import madoku.craft.java.core.rarity.RarityTierAPIManager.Tier;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -7,8 +9,8 @@ import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
-import madoku.craft.java.core.rarity.RarityTierAPIManager.Tier;
 
+/** Feature-neutral rarity application; optional item and luck behavior enters through Core adapters. */
 public final class RarityRuntimeManager {
 	private static volatile boolean initialized;
 
@@ -24,17 +26,19 @@ public final class RarityRuntimeManager {
 	}
 
 	public static void applyGeneratedRarity(ItemStack stack, RandomSource randomSource, ServerPlayer luckPlayer) {
-		if (!isEnabled() || stack == null || stack.isEmpty() || detectAppliedRarity(stack) != null) {
+		if (!isEnabled() || stack == null || stack.isEmpty()
+			|| !RarityEligibilityAPIManager.isEligible(stack) || detectAppliedRarity(stack) != null) {
 			return;
 		}
 
+		ServerPlayer resolvedPlayer = luckPlayer == null ? LootFeatureAPIManager.resolveActiveDropPlayer() : luckPlayer;
 		RandomSource random = randomSource == null ? RandomSource.create() : randomSource;
-		rollAndApplySingle(random, stack, null, false);
+		rollAndApplySingle(random, stack, resolvedPlayer, RarityConfigManager.useMadokuLuck());
 	}
 
 	public static void applyConfiguredRarity(ItemStack stack, Tier rarity) {
 		if (!isEnabled() || stack == null || stack.isEmpty() || rarity == null
-			|| detectAppliedRarity(stack) != null) {
+			|| !RarityEligibilityAPIManager.isEligible(stack) || detectAppliedRarity(stack) != null) {
 			return;
 		}
 		applyRarity(stack, rarity);
@@ -69,8 +73,8 @@ public final class RarityRuntimeManager {
 
 	private static Tier rollRandomRarity(RandomSource random, ServerPlayer luckPlayer, boolean useMadokuLuck) {
 		RandomSource resolvedRandom = random == null ? RandomSource.create() : random;
-		double luckStat = 0.0D;
-		boolean luckActive = false;
+		double luckStat = luckPlayer == null ? 0.0D : LootFeatureAPIManager.resolveLootLuckStat(luckPlayer);
+		boolean luckActive = luckPlayer != null;
 		double totalWeight = 0.0D;
 		for (Tier tier : Tier.values()) {
 			totalWeight += MadokuRarityManager.resolveWeight(tier, luckStat, luckActive && useMadokuLuck);
@@ -99,18 +103,24 @@ public final class RarityRuntimeManager {
 		if (stack == null || stack.isEmpty() || rarity == null) {
 			return;
 		}
-		if (rarity != Tier.COMMON) {
+		if (rarity != Tier.COMMON && RarityItemAPIManager.isRarityCategoryItem(stack)) {
 			double buffPercent = getRarityStatBuffPercent(rarity);
 			if (buffPercent > 0.0D) {
+				RarityItemAPIManager.applyRarityScaling(stack, multiplierFromBuffPercent(buffPercent));
 			}
 		}
 		MutableComponent coloredName = stack.getItem().getName(stack).copy()
 			.withStyle(style -> style.withColor(rarity.color()).withItalic(false));
 		stack.set(DataComponents.CUSTOM_NAME, coloredName);
+		if (RarityItemAPIManager.isRarityCategoryItem(stack)) {
+			RarityItemAPIManager.updateDurabilityLore(stack);
+		}
 	}
 
 	public static void preserveRarityOnRename(ItemStack source, ItemStack target) {
-		if (source == null || source.isEmpty() || target == null || target.isEmpty()) {
+		if (source == null || source.isEmpty() || target == null || target.isEmpty()
+			|| !RarityEligibilityAPIManager.isEligible(source)
+			|| !RarityEligibilityAPIManager.isEligible(target)) {
 			return;
 		}
 
@@ -137,4 +147,7 @@ public final class RarityRuntimeManager {
 		};
 	}
 
+	private static double multiplierFromBuffPercent(double buffPercent) {
+		return 1.0D + Math.max(0.0D, buffPercent) / 100.0D;
+	}
 }

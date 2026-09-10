@@ -351,9 +351,11 @@ public final class LootTableStructuresManager {
 		int maxStackSize = Math.max(1, probe.getMaxStackSize());
 		int stackCount = Math.min(maxStackSize, count);
 		ItemStack stack = new ItemStack(item, stackCount);
+		LootFeatureAPIManager.applyGeneratedItemLevel(stack, random);
 		if (itemRarity != null) {
 			RarityAPIManager.applyConfiguredRarity(stack, itemRarity);
 		}
+		LootFeatureAPIManager.applyPetLore(stack);
 		into.add(stack);
 	}
 
@@ -393,13 +395,18 @@ public final class LootTableStructuresManager {
 		return RarityAPIManager.resolveWeightMultiplier(rarity, luckStat, luckActive);
 	}
 
-	private static boolean isLuckActiveForLoot(ServerPlayer player, Settings activeSettings) { return false; }
+	private static boolean isLuckActiveForLoot(ServerPlayer player, Settings activeSettings) {
+		return player != null
+			&& activeSettings != null
+			&& activeSettings.useMadokuLuck
+			&& LootFeatureAPIManager.isLuckEnabled();
+	}
 
 	private static double resolveLuckStat(ServerPlayer player, Settings activeSettings) {
 		if (!isLuckActiveForLoot(player, activeSettings)) {
 			return 0.0d;
 		}
-		return 0.0D;
+		return LootFeatureAPIManager.resolveLootLuckStat(player);
 	}
 
 	private static String resolveQueriedLootTableId(LootContext lootContext) {
@@ -722,7 +729,8 @@ public final class LootTableStructuresManager {
 			return true;
 		}
 		return switch (tag) {
-			case GROUP_TAG_MADOKU_PETS, GROUP_TAG_MADOKU_LUCK -> false;
+			case GROUP_TAG_MADOKU_PETS -> LootFeatureAPIManager.isPetsEnabled();
+			case GROUP_TAG_MADOKU_LUCK -> LootFeatureAPIManager.isLuckEnabled();
 			case GROUP_TAG_MADOKU_RARITY -> RarityAPIManager.isEnabled();
 			default -> true;
 		};

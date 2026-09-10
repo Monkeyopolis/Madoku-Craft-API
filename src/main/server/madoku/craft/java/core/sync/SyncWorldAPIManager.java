@@ -2,8 +2,9 @@ package madoku.craft.java.core.sync;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import madoku.craft.java.core.scheduler.SchedulerAPIManager;
+import madoku.craft.java.core.runtime.AdaptiveIntervalAPIManager;
 import madoku.craft.java.core.time.TimeAPIManager;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 
@@ -23,7 +24,7 @@ public final class SyncWorldAPIManager {
 
 	public static void reset() {
 		nextPeriodicSyncTick = Long.MIN_VALUE;
-		SchedulerAPIManager.clearAdaptiveDelayState(ADAPTIVE_OWNER_ID);
+		AdaptiveIntervalAPIManager.clearSystem(ADAPTIVE_OWNER_ID);
 	}
 
 	public static void onServerStarted(MinecraftServer server) {
@@ -43,9 +44,9 @@ public final class SyncWorldAPIManager {
 			return false;
 		}
 
-		long interval = SchedulerAPIManager.resolveAdaptiveDelayTicks(
-			server,
+		long interval = AdaptiveIntervalAPIManager.resolve(
 			ADAPTIVE_OWNER_ID,
+			server,
 			MIN_PERIODIC_INTERVAL_TICKS,
 			MAX_PERIODIC_INTERVAL_TICKS
 		);
@@ -54,17 +55,32 @@ public final class SyncWorldAPIManager {
 	}
 
 	public static boolean canSend(ServerPlayer player, CustomPacketPayload payload) {
-		return SyncGlobalManager.canSend(player, payload);
+		return player != null
+			&& payload != null
+			&& ServerPlayNetworking.canSend(player, payload.type());
 	}
 
 	public static boolean send(ServerPlayer player, CustomPacketPayload payload) {
-		return SyncGlobalManager.send(player, payload);
+		if (!canSend(player, payload)) {
+			return false;
+		}
+		ServerPlayNetworking.send(player, payload);
+		return true;
 	}
 
 	public static int broadcast(MinecraftServer server, CustomPacketPayload payload) {
-		return SyncGlobalManager.broadcast(server, payload);
+		if (server == null || payload == null) {
+			return 0;
+		}
+
+		int sent = 0;
+		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+			if (send(player, payload)) {
+				sent++;
+			}
+		}
+		return sent;
 	}
 
 
 }
-

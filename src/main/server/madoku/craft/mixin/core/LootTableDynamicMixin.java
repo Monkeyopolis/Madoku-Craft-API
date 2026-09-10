@@ -1,6 +1,7 @@
 package madoku.craft.mixin.core;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import madoku.craft.java.core.loot.LootFeatureAPIManager;
 import madoku.craft.java.core.loot.LootTableAPIManager;
 import madoku.craft.java.core.rarity.RarityAPIManager;
 import net.minecraft.util.RandomSource;
@@ -67,7 +68,10 @@ public class LootTableDynamicMixin {
 
 		RandomSource random = lootContext == null ? null : lootContext.getRandom();
 		for (ItemStack stack : stacks) {
-			RarityAPIManager.applyGeneratedRarity(stack, random);
+			LootFeatureAPIManager.applyGeneratedItemLevel(stack, random);
+			RarityAPIManager.applyGeneratedRarity(stack, random,
+				LootFeatureAPIManager.resolveLootPlayer(lootContext));
+			LootFeatureAPIManager.applyPetLore(stack);
 		}
 	}
 }

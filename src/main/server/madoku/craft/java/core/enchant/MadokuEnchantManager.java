@@ -50,6 +50,7 @@ public final class MadokuEnchantManager {
 		copyManagedItemData(source, target);
 		EnchantmentHelper.setEnchantments(target, EnchantmentHelper.getEnchantmentsForCrafting(source));
 		copyManagedItemData(source, target);
+		EnchantItemAPIManager.updateDurabilityLore(target);
 	}
 
 	public static void mergeEnchantments(ItemStack primary, ItemStack duplicate, ItemStack target) {
@@ -68,6 +69,7 @@ public final class MadokuEnchantManager {
 		copyManagedItemData(primary, target);
 		EnchantmentHelper.setEnchantments(target, merged.toImmutable());
 		copyManagedItemData(primary, target);
+		EnchantItemAPIManager.updateDurabilityLore(target);
 	}
 
 	private static void copyManagedItemData(ItemStack source, ItemStack target) {

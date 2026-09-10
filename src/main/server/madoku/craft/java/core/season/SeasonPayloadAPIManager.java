@@ -1,6 +1,5 @@
 package madoku.craft.java.core.season;
 
-import madoku.craft.java.MadokuCraftCore;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -16,7 +15,7 @@ public record SeasonPayloadAPIManager(
 	int seasonLengthDays
 ) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<SeasonPayloadAPIManager> TYPE =
-		new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "world_season"));
+		new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("madoku-craft", "world_season"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, SeasonPayloadAPIManager> CODEC =
 		StreamCodec.composite(
 			ByteBufCodecs.STRING_UTF8,
@@ -39,4 +38,3 @@ public record SeasonPayloadAPIManager(
 		return TYPE;
 	}
 }
-

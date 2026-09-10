@@ -7,7 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 
-/** Orchestrates the Madoku Rarity API subsystem and exposes its shared helpers. */
+/** Orchestrates Core's generic rarity subsystem and its synchronized settings. */
 public final class MadokuRarityManager {
 	private static volatile Boolean clientSynchronizedEnabled;
 
@@ -64,7 +64,6 @@ public final class MadokuRarityManager {
 		RarityRuntimeManager.applyConfiguredRarity(stack, rarity);
 	}
 
-	/** Keeps the rarity color when vanilla replaces an item's custom name, such as in an anvil. */
 	public static void preserveRarityOnRename(ItemStack source, ItemStack target) {
 		RarityRuntimeManager.preserveRarityOnRename(source, target);
 	}
@@ -73,43 +72,37 @@ public final class MadokuRarityManager {
 		return RarityRuntimeManager.detectAppliedRarity(stack);
 	}
 
-	/**
-	 * Returns whether the stack has a rarity applied by this subsystem.
-	 *
-	 * This is deliberately separate from the Items category predicate used when
-	 * generating rarity. It is safe for the client overlay and remains valid when
-	 * the Items subsystem is not present in a Core port.
-	 */
 	public static boolean isRarityItem(ItemStack stack) {
-		return detectAppliedRarity(stack) != null;
+		return RarityEligibilityAPIManager.isEligible(stack) && detectAppliedRarity(stack) != null;
 	}
 
-	/** Resolves the configured rarity weight for systems that opt into Madoku Rarity and Luck. */
 	public static double resolveWeight(Tier tier, double luckStat, boolean useMadokuLuck) {
-		RarityConfigManager.RaritySettings rarity = RarityConfigManager.settings(tier);
-		if (rarity == null || !rarity.enabled || rarity.weight <= 0) {
+		if (!RarityConfigManager.isTierEnabled(tier) || RarityConfigManager.getTierWeight(tier) <= 0) {
 			return 0.0D;
 		}
 
 		double luckWeight = 0.0D;
-		// Luck is supplied by the optional Attributes module. Core keeps the
-		// configured base weights when that module is absent.
-		return Math.max(0.0D, rarity.weight + luckWeight);
+		if (useMadokuLuck && RarityConfigManager.useMadokuLuck()
+			&& madoku.craft.java.core.loot.LootFeatureAPIManager.isLuckEnabled()) {
+			luckWeight = Double.isFinite(luckStat)
+				? Math.max(0.0D, luckStat) * Math.max(0.0D, RarityConfigManager.getTierWeightAdjustment(tier))
+				: 0.0D;
+		}
+		return Math.max(0.0D, RarityConfigManager.getTierWeight(tier) + luckWeight);
 	}
 
 	public static double resolveWeight(Tier tier, ServerPlayer player, boolean useMadokuLuck) {
 		return resolveWeight(
 			tier,
-			0.0D,
-			false
+			player == null ? 0.0D : madoku.craft.java.core.loot.LootFeatureAPIManager.resolveLootLuckStat(player),
+			useMadokuLuck && player != null
 		);
 	}
 
 	public static double resolveWeightMultiplier(Tier tier, double luckStat, boolean useMadokuLuck) {
-		RarityConfigManager.RaritySettings rarity = RarityConfigManager.settings(tier);
-		if (rarity == null || !rarity.enabled || rarity.weight <= 0) {
+		if (!RarityConfigManager.isTierEnabled(tier) || RarityConfigManager.getTierWeight(tier) <= 0) {
 			return 0.0D;
 		}
-		return resolveWeight(tier, luckStat, useMadokuLuck) / rarity.weight;
+		return resolveWeight(tier, luckStat, useMadokuLuck) / RarityConfigManager.getTierWeight(tier);
 	}
 }

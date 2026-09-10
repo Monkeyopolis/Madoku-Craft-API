@@ -10,6 +10,7 @@
     "core.BlockPlayerDestroyDropContextMixin",
     "core.ContainerEntityLootMixin",
     "core.CraftingMenuRarityMixin",
+    "core.EnchantmentConfigurationMixin",
     "core.EnchantmentMenuMixin",
     "core.InventoryMenuRarityMixin",
     "core.ItemInputRarityMixin",
@@ -21,29 +22,28 @@
     "core.RecipeManagerRecipeOverridesMixin",
     "core.ResultSlotRarityMixin",
     "core.ServerClockManagerMixin",
-    "core.ServerLevelRandomPositionTickMixin",
     "core.ServerPlayerSleepTimeMixin",
     "core.SmithingItemCombinerMenuMixin",
     "core.SmithingMenuMixin",
     "core.SmithingTransformRecipeRarityMixin",
     "core.TimelineMixin",
     "inventory.SlotAccessor",
+    "item.ItemBuiltInRegistryHolderAccessor",
+    "item.ItemComponentsAccessor",
+    "itemstack.ItemStackUnbreakingMixin",
     "season.BiomeSeasonalFreezeMixin",
     "season.IceBlockSeasonalMeltMixin",
     "season.LevelSeasonalPrecipitationMixin",
     "season.SnowLayerBlockSeasonalMeltMixin"
   ],
   "client": [
-    "color.BiomeTemperatureColorMixin",
-    "color.SpruceBirchLeafTintMixin",
     "core.EnchantmentScreenMixin",
     "core.GuiGraphicsRarityOverlayMixin",
     "core.SmithingScreenMixin",
     "inventory.AbstractContainerScreenAccessor",
-    "season.BiomeSeasonalPrecipitationMixin",
-    "season.LevelSeasonalWeatherClientMixin"
+    "inventory.CreativeModeInventoryScreenAccessor",
+    "inventory.CreativeModeSlotWrapperAccessor",
+    "inventory.InventoryScreenLabelMixin"
   ],
-  "injectors": {
-    "defaultRequire": 1
-  }
+  "injectors": { "defaultRequire": 1 }
 }

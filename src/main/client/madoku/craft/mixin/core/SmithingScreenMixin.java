@@ -1,6 +1,5 @@
 package madoku.craft.mixin.core;
 
-import madoku.craft.java.MadokuCraftCore;
 import madoku.craft.java.core.smithing.SmithingAPIManager;
 import madoku.craft.java.core.smithing.SmithingConfigAPIManager;
 import madoku.craft.mixin.inventory.AbstractContainerScreenAccessor;
@@ -22,20 +21,20 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(SmithingScreen.class)
 public abstract class SmithingScreenMixin {
-	private static final Identifier MADOKU_BOTTLE_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/bottle-slot.png");
-	private static final Identifier MADOKU_HELMET_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/helmet-slot.png");
-	private static final Identifier MADOKU_CHESTPLATE_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/chestplate-slot.png");
-	private static final Identifier MADOKU_LEGGINGS_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/leggings-slot.png");
-	private static final Identifier MADOKU_BOOTS_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/boots-slot.png");
-	private static final Identifier MADOKU_PET_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/pet-slot.png");
-	private static final Identifier MADOKU_TEMPLATE_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/template-upgrade-slot.png");
-	private static final Identifier MADOKU_TRIM_TEMPLATE_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/template-trim-slot.png");
-	private static final Identifier MADOKU_AXE_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/axe-slot.png");
-	private static final Identifier MADOKU_SWORD_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/sword-slot.png");
-	private static final Identifier MADOKU_PICKAXE_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/pickaxe-slot.png");
-	private static final Identifier MADOKU_SHOVEL_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/shovel-slot.png");
-	private static final Identifier MADOKU_SPEAR_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/spear-slot.png");
-	private static final Identifier MADOKU_INGOT_SLOT = Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "textures/icons/ingot-slot.png");
+	private static final Identifier MADOKU_BOTTLE_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/bottle-slot.png");
+	private static final Identifier MADOKU_HELMET_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/helmet-slot.png");
+	private static final Identifier MADOKU_CHESTPLATE_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/chestplate-slot.png");
+	private static final Identifier MADOKU_LEGGINGS_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/leggings-slot.png");
+	private static final Identifier MADOKU_BOOTS_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/boots-slot.png");
+	private static final Identifier MADOKU_PET_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/pet-slot.png");
+	private static final Identifier MADOKU_TEMPLATE_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/template-upgrade-slot.png");
+	private static final Identifier MADOKU_TRIM_TEMPLATE_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/template-trim-slot.png");
+	private static final Identifier MADOKU_AXE_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/axe-slot.png");
+	private static final Identifier MADOKU_SWORD_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/sword-slot.png");
+	private static final Identifier MADOKU_PICKAXE_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/pickaxe-slot.png");
+	private static final Identifier MADOKU_SHOVEL_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/shovel-slot.png");
+	private static final Identifier MADOKU_SPEAR_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/spear-slot.png");
+	private static final Identifier MADOKU_INGOT_SLOT = Identifier.fromNamespaceAndPath("madoku-craft", "textures/icons/ingot-slot.png");
 	@Unique private int madokuCraft$slotIconTick;
 	@Shadow @Final private CyclingSlotBackground baseIcon;
 	@Shadow @Final private CyclingSlotBackground templateIcon;
@@ -143,4 +142,3 @@ public abstract class SmithingScreenMixin {
 		);
 	}
 }
-

@@ -194,16 +194,21 @@ public final class EquipmentsConfigAPIManager {
 	}
 
 	private static String defaultFileKeyForType(EntityType<?> type) {
-		String[] supported = {"skeleton", "stray", "bogged", "wither_skeleton", "zombie", "husk", "drowned", "zombie_villager"};
-		for (String mob : supported) {
-			if (type == vanillaEntityType(mob)) return "minecraft-equipment-" + mob;
-		}
+		if (isEntityType(type, "minecraft:skeleton")) return "minecraft-equipment-skeleton";
+		if (isEntityType(type, "minecraft:stray")) return "minecraft-equipment-stray";
+		if (isEntityType(type, "minecraft:bogged")) return "minecraft-equipment-bogged";
+		if (isEntityType(type, "minecraft:parched")) return "minecraft-equipment-parched";
+		if (isEntityType(type, "minecraft:wither_skeleton")) return "minecraft-equipment-wither-skeleton";
+		if (isEntityType(type, "minecraft:husk")) return "minecraft-equipment-husk";
+		if (isEntityType(type, "minecraft:drowned")) return "minecraft-equipment-drowned";
+		if (isEntityType(type, "minecraft:zombie_villager")) return "minecraft-equipment-zombie-villager";
+		if (isEntityType(type, "minecraft:zombie")) return "minecraft-equipment-zombie";
 		return "";
 	}
 
-	private static EntityType<?> vanillaEntityType(String path) {
-		Identifier identifier = Identifier.tryParse("minecraft:" + path);
-		return identifier == null ? null : BuiltInRegistries.ENTITY_TYPE.getValue(identifier);
+	private static boolean isEntityType(EntityType<?> type, String identifier) {
+		Identifier key = type == null ? null : BuiltInRegistries.ENTITY_TYPE.getKey(type);
+		return identifier != null && identifier.equals(key == null ? null : key.toString());
 	}
 
 	private static EquipmentProfile parseProfile(JsonObject root) {

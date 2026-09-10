@@ -14,6 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.item.ItemStack;
@@ -107,12 +108,32 @@ public final class LootTableEntitiesAPIManager {
 		}
 
 		LivingEntity thisEntity = resolveLootContextParameter(lootContext, "THIS_ENTITY", LivingEntity.class);
+		if (thisEntity instanceof Sheep && isSheepShearingContext(lootContext)) {
+			return null;
+		}
 		String tableId = resolveQueriedLootTableId(lootContext);
 		if (tableId.isBlank()) {
 			tableId = resolveEntityLootTableId(thisEntity);
 		}
 
 		LootTableAPIManager.SharedLootTable managed = null;
+		boolean zombieEntity = thisEntity != null && isZombieMobType(thisEntity.getType());
+		String zombieConfiguredReference = "";
+		boolean zombieCustomDropsEnabled = false;
+		if (thisEntity != null && isEntityType(thisEntity.getType(), "minecraft:bee") && LootFeatureAPIManager.isMobEnabled()) {
+			if (!LootFeatureAPIManager.isBeeCustomMobDropsEnabled(thisEntity)) {
+				return null;
+			}
+			String configuredReference = LootFeatureAPIManager.resolveBeeMobDropsConfigReference(thisEntity);
+			managed = resolveManagedTableByConfigReference(configuredReference);
+		}
+		if (managed == null && thisEntity != null && LootFeatureAPIManager.isMobEnabled() && zombieEntity) {
+			zombieCustomDropsEnabled = LootFeatureAPIManager.isZombieCustomMobDropsEnabled(thisEntity);
+			if (zombieCustomDropsEnabled) {
+				zombieConfiguredReference = LootFeatureAPIManager.resolveZombieMobDropsConfigReference(thisEntity);
+				managed = resolveManagedTableByConfigReference(zombieConfiguredReference);
+			}
+		}
 		if (managed == null) {
 			managed = resolveManagedTableByLootId(tableId);
 		}
@@ -125,7 +146,7 @@ public final class LootTableEntitiesAPIManager {
 			ServerLevel level = lootContext.getLevel();
 			random = level == null ? RandomSource.create() : level.getRandom();
 		}
-		ServerPlayer player = null;
+		ServerPlayer player = LootFeatureAPIManager.resolveLootPlayer(lootContext);
 		List<ItemStack> generated = new ArrayList<>(LootTableAPIManager.rollSharedTable(
 			managed, random, player, activeSettings.useMadokuLuck
 		));
@@ -151,6 +172,7 @@ public final class LootTableEntitiesAPIManager {
 			LootTableAPIManager.rollSharedTable(managed, resolvedRandom, player, activeSettings.useMadokuLuck)
 		);
 		applyConfiguredLooting(player, resolvedRandom, generated);
+		LootFeatureAPIManager.applyManagedMobDrops(player, resolvedRandom, generated);
 		return List.copyOf(generated);
 	}
 
@@ -189,7 +211,24 @@ public final class LootTableEntitiesAPIManager {
 		return List.copyOf(adjusted);
 	}
 
+	private static boolean isSheepShearingContext(LootContext lootContext) {
+		ItemStack tool = resolveLootContextParameter(lootContext, "TOOL", ItemStack.class);
+		return tool != null && tool.is(Items.SHEARS);
+	}
 
+
+
+	private static boolean isZombieMobType(EntityType<?> type) {
+		return isEntityType(type, "minecraft:zombie")
+			|| isEntityType(type, "minecraft:husk")
+			|| isEntityType(type, "minecraft:drowned")
+			|| isEntityType(type, "minecraft:zombie_villager");
+	}
+
+	private static boolean isEntityType(EntityType<?> type, String identifier) {
+		var key = type == null ? null : BuiltInRegistries.ENTITY_TYPE.getKey(type);
+		return identifier != null && identifier.equals(key == null ? null : key.toString());
+	}
 
 	private static void fillContainer(Container container, List<ItemStack> generated, RandomSource random) {
 		if (container == null) {
@@ -611,7 +650,6 @@ public final class LootTableEntitiesAPIManager {
 
 	}
 }
-
 
 
 

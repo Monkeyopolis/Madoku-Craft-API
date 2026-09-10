@@ -1,6 +1,5 @@
 package madoku.craft.java.core.sync;
 
-import madoku.craft.java.MadokuCraftCore;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -20,7 +19,7 @@ public record SyncPayloadAPIManager(String configId, byte[] compressedSnapshot) 
 	private static final int MAX_UNCOMPRESSED_BYTES = 4_194_304;
 
 	public static final CustomPacketPayload.Type<SyncPayloadAPIManager> TYPE =
-		new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "config_sync"));
+		new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("madoku-craft", "config_sync"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, SyncPayloadAPIManager> CODEC = StreamCodec.composite(
 		ByteBufCodecs.STRING_UTF8,
 		SyncPayloadAPIManager::configId,
@@ -104,4 +103,3 @@ public record SyncPayloadAPIManager(String configId, byte[] compressedSnapshot) 
 		return TYPE;
 	}
 }
-

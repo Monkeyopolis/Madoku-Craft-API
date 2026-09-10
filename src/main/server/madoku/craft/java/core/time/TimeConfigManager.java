@@ -3,7 +3,6 @@ package madoku.craft.java.core.time;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import madoku.craft.java.core.MadokuCoreManager;
 import madoku.craft.java.core.json.JSONFormatAPIManager;
 import madoku.craft.java.core.json.JSONAPIManager;
 import madoku.craft.java.core.season.SeasonAPIManager;
@@ -17,7 +16,7 @@ import java.nio.file.Path;
 
 public final class TimeConfigManager {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TimeConfigManager.class);
-	private static final String TIME_CONFIG_FOLDER_NAME = MadokuCoreManager.CORE_FOLDER_NAME + "/madoku-time";
+	private static final String TIME_CONFIG_FOLDER_NAME = "madoku-craft-core/madoku-time";
 	private static final String TIME_CONFIG_FILE_NAME = "madoku-time";
 	private static final long TICKS_PER_MINUTE = TimeAPIManager.TICKS_PER_SECOND * TimeAPIManager.SECONDS_PER_MINUTE;
 
@@ -588,5 +587,4 @@ public final class TimeConfigManager {
 		}
 	}
 }
-
 

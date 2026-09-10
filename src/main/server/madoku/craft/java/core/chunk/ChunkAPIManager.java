@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import madoku.craft.java.core.scheduler.SchedulerAPIManager;
+import net.minecraft.resources.Identifier;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -282,7 +282,22 @@ public final class ChunkAPIManager {
 	}
 
 	static String levelId(ServerLevel level) {
-		return level == null ? "" : SchedulerAPIManager.normalizeLevelIdentifier(level.dimension().toString());
+		return level == null ? "" : normalizeLevelIdentifier(level.dimension().toString());
+	}
+
+	/** Normalizes a level identifier for persisted world-scoped data. */
+	public static String normalizeLevelIdentifier(String levelId) {
+		if (levelId == null) return "";
+		String trimmed = levelId.trim();
+		if (trimmed.isEmpty()) return "";
+		if (Identifier.tryParse(trimmed) != null) return trimmed;
+		int slashIndex = trimmed.lastIndexOf('/');
+		int closeBracketIndex = trimmed.lastIndexOf(']');
+		if (slashIndex >= 0 && closeBracketIndex > slashIndex) {
+			String candidate = trimmed.substring(slashIndex + 1, closeBracketIndex).trim();
+			if (Identifier.tryParse(candidate) != null) return candidate;
+		}
+		return trimmed;
 	}
 
 	static long packChunk(int chunkX, int chunkZ) {
@@ -325,4 +340,3 @@ public final class ChunkAPIManager {
 
 	private record PendingChunkEvent(ServerLevel level, int chunkX, int chunkZ, boolean loaded, long generation) { }
 }
-

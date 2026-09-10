@@ -11,7 +11,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
-/** Owns global payload registration and transport primitives. */
+/** Owns Core payload registration and shared transport primitives. */
 public final class SyncGlobalManager {
 	private static volatile boolean initialized;
 

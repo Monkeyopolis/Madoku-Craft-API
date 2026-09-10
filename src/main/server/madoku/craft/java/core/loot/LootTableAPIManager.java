@@ -50,7 +50,7 @@ public final class LootTableAPIManager {
 	public static void reset() { provider.reset(); }
 
 	static long resolveReloadIntervalMillis(net.minecraft.server.MinecraftServer server) {
-		long ticks = madoku.craft.java.core.scheduler.SchedulerAdaptiveIntervalAPIManager.resolve("loot-table-config", server, 30L, 600L);
+		long ticks = madoku.craft.java.core.runtime.AdaptiveIntervalAPIManager.resolve("loot-table-config", server, 30L, 600L);
 		return ticks * 50L;
 	}
 
@@ -152,8 +152,8 @@ public final class LootTableAPIManager {
 		ServerPlayer player,
 		boolean useMadokuLuck
 	) {
-		boolean luckActive = false;
-		double luckStat = 0.0d;
+		boolean luckActive = useMadokuLuck && player != null && LootFeatureAPIManager.isLuckEnabled();
+		double luckStat = luckActive ? LootFeatureAPIManager.resolveLootLuckStat(player) : 0.0d;
 		return rollSharedTable(table, random, luckStat, luckActive);
 	}
 

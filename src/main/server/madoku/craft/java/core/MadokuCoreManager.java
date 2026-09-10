@@ -2,6 +2,8 @@ package madoku.craft.java.core;
 
 import madoku.craft.java.core.chunk.ChunkAPIManager;
 import madoku.craft.java.core.data.DataAPIManager;
+import madoku.craft.java.core.data.ChunkDataAPIManager;
+import madoku.craft.java.core.data.MadokuChunkDataProvider;
 import madoku.craft.java.core.data.MadokuDataProvider;
 import madoku.craft.java.core.enchant.EnchantAPIManager;
 import madoku.craft.java.core.enchant.MadokuEnchantProvider;
@@ -13,17 +15,19 @@ import madoku.craft.java.core.helper.MadokuBlockDropContextProvider;
 import madoku.craft.java.core.helper.MadokuHelperProvider;
 import madoku.craft.java.core.json.JSONAPIManager;
 import madoku.craft.java.core.loot.LootTableAPIManager;
-import madoku.craft.java.core.recipes.RecipesAPIManager;
 import madoku.craft.java.core.rarity.MadokuRarityProvider;
 import madoku.craft.java.core.rarity.RarityAPIManager;
-import madoku.craft.java.core.scheduler.SchedulerAPIManager;
+import madoku.craft.java.core.recipes.RecipesAPIManager;
+import madoku.craft.java.core.runtime.AdaptiveIntervalAPIManager;
+import madoku.craft.java.core.runtime.MadokuAdaptiveIntervalProvider;
 import madoku.craft.java.core.season.SeasonAPIManager;
 import madoku.craft.java.core.smithing.SmithingAPIManager;
 import madoku.craft.java.core.sync.SyncAPIManager;
+import madoku.craft.java.core.sync.SyncConfigAPIManager;
 import madoku.craft.java.core.sync.MadokuSyncProvider;
-import madoku.craft.java.core.scheduler.MadokuSchedulerProvider;
 import madoku.craft.java.core.time.TimeAPIManager;
 import madoku.craft.java.core.time.MadokuTimeProvider;
+import net.minecraft.resources.Identifier;
 
 import java.nio.file.Path;
 
@@ -47,21 +51,23 @@ public final class MadokuCoreManager {
 		DataAPIManager.initialize();
 		TimeAPIManager.registerProvider(new MadokuTimeProvider());
 		TimeAPIManager.initialize();
+		AdaptiveIntervalAPIManager.registerProvider(new MadokuAdaptiveIntervalProvider());
+		AdaptiveIntervalAPIManager.initialize();
 		ChunkAPIManager.initialize();
+		ChunkDataAPIManager.registerProvider(new MadokuChunkDataProvider());
+		ChunkDataAPIManager.initialize();
 		SeasonAPIManager.initialize();
-		SchedulerAPIManager.registerProvider(new MadokuSchedulerProvider());
-		SchedulerAPIManager.initialize();
 		SyncAPIManager.registerProvider(new MadokuSyncProvider());
 		SyncAPIManager.initialize();
 		RecipesAPIManager.initialize();
-		RarityAPIManager.registerProvider(new MadokuRarityProvider());
-		RarityAPIManager.initialize();
 		LootTableAPIManager.registerProvider(new MadokuLootTableProvider());
 		LootTableAPIManager.initialize();
 		EnchantAPIManager.registerProvider(new MadokuEnchantProvider());
 		EnchantAPIManager.initialize();
 		SmithingAPIManager.registerProvider(new MadokuSmithingProvider());
 		SmithingAPIManager.initialize();
+		RarityAPIManager.registerProvider(new MadokuRarityProvider());
+		RarityAPIManager.initialize();
 	}
 
 	/** Returns the root directory shared by core subsystems. */
@@ -69,27 +75,44 @@ public final class MadokuCoreManager {
 		return JSONAPIManager.getOrCreateGlobalSystemDirectory(CORE_FOLDER_NAME);
 	}
 
+	/** Normalizes a level identifier for persisted world-scoped data. */
+	public static String normalizeLevelIdentifier(String levelId) {
+		if (levelId == null) return null;
+		String trimmed = levelId.trim();
+		if (trimmed.isEmpty()) return null;
+		if (Identifier.tryParse(trimmed) != null) return trimmed;
+		int slashIndex = trimmed.lastIndexOf('/');
+		int closeBracketIndex = trimmed.lastIndexOf(']');
+		if (slashIndex >= 0 && closeBracketIndex > slashIndex) {
+			String candidate = trimmed.substring(slashIndex + 1, closeBracketIndex).trim();
+			if (Identifier.tryParse(candidate) != null) return candidate;
+		}
+		return trimmed;
+	}
+
 	/** Resets runtime state for the core services and all core subsystems. */
 	public static void reset() {
+		SyncConfigAPIManager.resetClientSynchronizedState();
 		HelperAPIManager.reset();
 		DataAPIManager.reset();
 		JSONAPIManager.reset();
 		TimeAPIManager.reset();
+		AdaptiveIntervalAPIManager.reset();
 		SeasonAPIManager.reset();
 		ChunkAPIManager.reset();
-		SchedulerAPIManager.reset();
+		ChunkDataAPIManager.reset();
 		SyncAPIManager.reset();
 		RecipesAPIManager.reset();
-		RarityAPIManager.reset();
 		LootTableAPIManager.reset();
 		EnchantAPIManager.reset();
 		SmithingAPIManager.reset();
+		RarityAPIManager.reset();
 	}
 
 	public static void loadPersistedData(net.minecraft.server.MinecraftServer server) {
 		DataAPIManager.loadPersistedData(server);
 		ChunkAPIManager.loadPersistedData(server);
-		SchedulerAPIManager.loadPersistedData(server);
+		ChunkDataAPIManager.loadPersistedData(server);
 	}
 
 	public static void onServerStarted(net.minecraft.server.MinecraftServer server) {
@@ -102,17 +125,28 @@ public final class MadokuCoreManager {
 		RecipesAPIManager.initialize();
 		LootTableAPIManager.initialize();
 		EnchantAPIManager.initialize();
+		RarityAPIManager.initialize();
 		SmithingAPIManager.onServerStarted(server);
+		TimeAPIManager.broadcastWorldTimeNow(server);
+		SeasonAPIManager.broadcastWorldSeasonNow(server);
+	}
+
+	public static void onServerStartTick(net.minecraft.server.MinecraftServer server) {
+		TimeAPIManager.refreshSleepTickIncrement(server);
+		SeasonAPIManager.onServerStartTick(server);
 	}
 
 	public static void onServerTick(net.minecraft.server.MinecraftServer server) {
+		TimeAPIManager.advance(server, TimeAPIManager.getCachedSleepTickIncrement());
+		TimeAPIManager.update(server);
 		HelperAPIManager.onServerTick(server);
 		EnchantAPIManager.onServerTick(server);
 		ChunkAPIManager.onServerTick(server);
-		if (TimeAPIManager.isEnabled()) {
-			SchedulerAPIManager.onClockTick(server);
-		} else {
-			SchedulerAPIManager.onServerTick(server);
+		SeasonAPIManager.onServerTick(server);
+		if (shouldRunWorldSync(server)) {
+			TimeAPIManager.broadcastWorldTimeIfChanged(server);
+			SeasonAPIManager.broadcastWorldSeasonIfChanged(server);
+			SeasonAPIManager.syncPlayerClimateIfChanged(server);
 		}
 	}
 

@@ -1,6 +1,5 @@
 package madoku.craft.java.core.time;
 
-import madoku.craft.java.MadokuCraftCore;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -9,7 +8,7 @@ import net.minecraft.resources.Identifier;
 
 public record TimePayloadAPIManager(long day, int hour, int minute) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<TimePayloadAPIManager> TYPE =
-		new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "world_time"));
+		new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("madoku-craft", "world_time"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, TimePayloadAPIManager> CODEC =
 		StreamCodec.composite(
 			ByteBufCodecs.VAR_LONG,
@@ -26,4 +25,3 @@ public record TimePayloadAPIManager(long day, int hour, int minute) implements C
 		return TYPE;
 	}
 }
-

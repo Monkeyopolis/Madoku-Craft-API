@@ -3,7 +3,6 @@ package madoku.craft.java.core.rarity;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import madoku.craft.java.core.MadokuCoreManager;
 import madoku.craft.java.core.json.JSONFormatAPIManager;
 import madoku.craft.java.core.json.JSONAPIManager;
 import madoku.craft.java.core.rarity.RarityTierAPIManager.Tier;
@@ -18,7 +17,7 @@ import java.util.Map;
 
 public final class RarityConfigManager {
 	private static final Logger LOGGER = LoggerFactory.getLogger(RarityConfigManager.class);
-	private static final String RARITY_CONFIG_FOLDER_NAME = MadokuCoreManager.CORE_FOLDER_NAME + "/madoku-rarity";
+	private static final String RARITY_CONFIG_FOLDER_NAME = "madoku-craft-core/madoku-rarity";
 	private static final String RARITY_CONFIG_FILE_NAME = "madoku-rarity";
 	private static final String FIELD_ENABLED = "enabled";
 	private static final String FIELD_RARITY = "rarity";
@@ -65,6 +64,24 @@ public final class RarityConfigManager {
 
 	public static boolean useMadokuLuck() {
 		return settings.useMadokuLuck;
+	}
+
+	/** Returns whether a configured rarity tier is enabled. */
+	public static boolean isTierEnabled(Tier tier) {
+		RaritySettings rarity = settings(tier);
+		return rarity != null && rarity.enabled;
+	}
+
+	/** Returns the configured weight for a rarity tier. */
+	public static int getTierWeight(Tier tier) {
+		RaritySettings rarity = settings(tier);
+		return rarity == null ? 0 : rarity.weight;
+	}
+
+	/** Returns the configured luck adjustment for a rarity tier. */
+	public static double getTierWeightAdjustment(Tier tier) {
+		RaritySettings rarity = settings(tier);
+		return rarity == null ? 0.0D : rarity.weightAdjustment;
 	}
 
 	static RaritySettings settings(Tier tier) {
@@ -202,5 +219,3 @@ public final class RarityConfigManager {
 		return Math.max(min, Math.min(max, value));
 	}
 }
-
-

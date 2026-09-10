@@ -1,6 +1,5 @@
 package madoku.craft.java.core.season;
 
-import madoku.craft.java.MadokuCraftCore;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -10,7 +9,7 @@ import net.minecraft.resources.Identifier;
 /** Server-authoritative climate values for the local player HUD. */
 public record PlayerClimatePayloadAPIManager(double temperature, double humidity) implements CustomPacketPayload {
 	public static final CustomPacketPayload.Type<PlayerClimatePayloadAPIManager> TYPE =
-		new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath(MadokuCraftCore.MOD_ID, "player_climate"));
+		new CustomPacketPayload.Type<>(Identifier.fromNamespaceAndPath("madoku-craft", "player_climate"));
 	public static final StreamCodec<RegistryFriendlyByteBuf, PlayerClimatePayloadAPIManager> CODEC =
 		StreamCodec.composite(
 			ByteBufCodecs.DOUBLE,
@@ -25,4 +24,3 @@ public record PlayerClimatePayloadAPIManager(double temperature, double humidity
 		return TYPE;
 	}
 }
-

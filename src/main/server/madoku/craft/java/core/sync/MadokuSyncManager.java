@@ -11,6 +11,9 @@ public final class MadokuSyncManager {
 	public static void initialize() {
 		if (initialized) return;
 		SyncGlobalManager.initialize();
+		SyncConfigAPIManager.registerTransport((player, configId, snapshot) ->
+			SyncPlayerAPIManager.send(player, new SyncPayloadAPIManager(configId, snapshot))
+		);
 		SyncConfigAPIManager.initialize();
 		SyncWorldAPIManager.initialize();
 		SyncPlayerAPIManager.initialize();
@@ -18,6 +21,7 @@ public final class MadokuSyncManager {
 	}
 	public static void initializeClient() { SyncGlobalManager.initializeClient(); }
 	public static void reset() {
+		SyncConfigAPIManager.resetTransport();
 		SyncPlayerAPIManager.reset();
 		SyncWorldAPIManager.reset();
 		SyncGlobalManager.reset();
